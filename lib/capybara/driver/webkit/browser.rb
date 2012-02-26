@@ -1,6 +1,5 @@
 require 'socket'
 require 'thread'
-require 'capybara/util/timeout'
 require 'json'
 
 class Capybara::Driver::Webkit
@@ -194,9 +193,11 @@ class Capybara::Driver::Webkit
     end
 
     def connect
-      Capybara.timeout(5) do
-        attempt_connect
-        !@socket.nil?
+      Timeout.timeout(5) do
+        while @socket.nil?
+          attempt_connect
+          sleep(0.1) if @socket.nil?
+        end
       end
     end
 
